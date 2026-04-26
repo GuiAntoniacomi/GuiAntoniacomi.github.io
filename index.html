@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guilherme Antoniacomi — Analytics Engineer</title>
+    <meta name="description" content="Analista de Dados Sênior & Analytics Engineer. Arquitetura de Data Warehouses, camada semântica em LookML, FinOps em BigQuery, automação Python." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500&family=Geist:wght@300;400;500;600&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg:        '#0A0E13',
+                        elev:      '#11151C',
+                        elev2:     '#161B23',
+                        ink:       '#ECE9E0',
+                        'ink-muted':'#8E94A0',
+                        'ink-dim': '#5A6070',
+                        rule:      '#1E2530',
+                        accent:    '#E8B468',
+                        'accent-2':'#7DD3A3',
+                    },
+                    fontFamily: {
+                        display: ['"Fraunces"', 'ui-serif', 'Georgia', 'serif'],
+                        sans:    ['"Geist"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                        mono:    ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+                    },
+                    letterSpacing: {
+                        tightest: '-0.04em',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script>
+        // Initial language detection — runs before paint to avoid FOUC.
+        (function() {
+            var saved = localStorage.getItem('lang');
+            var lang = saved || (navigator.language.startsWith('pt') ? 'pt-BR' : 'en');
+            document.documentElement.setAttribute('lang', lang);
+        })();
+    </script>
+
+    <style>
+        :root {
+            --bg: #0A0E13;
+            --elev: #11151C;
+            --elev-2: #161B23;
+            --ink: #ECE9E0;
+            --ink-muted: #8E94A0;
+            --ink-dim: #5A6070;
+            --rule: #1E2530;
+            --accent: #E8B468;
+            --accent-2: #7DD3A3;
+        }
+
+        html { background: var(--bg); }
+        body {
+            font-family: 'Geist', system-ui, sans-serif;
+            font-feature-settings: "ss01", "ss02", "cv11";
+        }
+
+        ::selection { background: var(--accent); color: var(--bg); }
+
+        /* Language Toggle Logic */
+        html[lang="pt-BR"] .lang-en { display: none !important; }
+        html[lang="en"] .lang-pt { display: none !important; }
+
+        /* Active language highlight (driven by html[lang]) */
+        #langPT, #langEN { color: var(--ink-muted); transition: color .2s; }
+        html[lang="pt-BR"] #langPT,
+        html[lang="en"] #langEN {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--rule); }
+        ::-webkit-scrollbar-thumb:hover { background: #2A3340; }
+
+        /* Top scroll progress hairline */
+        .scroll-progress {
+            position: fixed; top: 0; left: 0; height: 1px;
+            background: var(--accent);
+            width: 0%; z-index: 100;
+            transition: width 0.05s linear;
+            box-shadow: 0 0 8px rgba(232,180,104,0.4);
+        }
+
+        /* Subtle film grain over everything */
+        .grain::before {
+            content: ''; position: fixed; inset: -50%;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.92  0 0 0 0 0.91  0 0 0 0 0.88  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+            background-size: 160px 160px;
+            pointer-events: none;
+            opacity: 0.55;
+            mix-blend-mode: overlay;
+            z-index: 1;
+            animation: grain 8s steps(8) infinite;
+        }
+        @keyframes grain {
+            0%,100% { transform: translate(0,0); }
+            10% { transform: translate(-2%, -3%); }
+            20% { transform: translate(-4%, 2%); }
+            30% { transform: translate(2%, -4%); }
+            40% { transform: translate(-1%, 3%); }
+            50% { transform: translate(-3%, 1%); }
+            60% { transform: translate(3%, 0%); }
+            70% { transform: translate(0%, 2%); }
+            80% { transform: translate(-3%, -1%); }
+            90% { transform: translate(2%, 3%); }
+        }
+
+        /* Hero schema lines (decorative SVG background) */
+        .schema-bg {
+            position: absolute; inset: 0; z-index: 0; pointer-events: none;
+            opacity: 0.35;
+            mask-image: radial-gradient(ellipse at 75% 30%, black 0%, transparent 65%);
+            -webkit-mask-image: radial-gradient(ellipse at 75% 30%, black 0%, transparent 65%);
+        }
+
+        /* Blinking terminal cursor */
+        .cursor-blink {
+            display: inline-block;
+            width: 0.55ch; height: 1em;
+            background: var(--accent);
+            margin-left: 0.15ch;
+            vertical-align: -0.12em;
+            animation: blink 1.05s steps(2) infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Reveal-on-scroll */
+        .reveal {
+            opacity: 0;
+            transform: translateY(14px);
+            transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1);
+        }
+        .reveal.in { opacity: 1; transform: translateY(0); }
+
+        /* Hero entrance stagger */
+        .hero-enter > * {
+            opacity: 0;
+            transform: translateY(18px);
+            animation: heroIn .9s cubic-bezier(.2,.7,.2,1) forwards;
+        }
+        .hero-enter > *:nth-child(1) { animation-delay: .05s; }
+        .hero-enter > *:nth-child(2) { animation-delay: .18s; }
+        .hero-enter > *:nth-child(3) { animation-delay: .32s; }
+        .hero-enter > *:nth-child(4) { animation-delay: .46s; }
+        .hero-enter > *:nth-child(5) { animation-delay: .58s; }
+        @keyframes heroIn { to { opacity: 1; transform: translateY(0); } }
+
+        /* Marker bracket — used on numbered chapters */
+        .chapter-num {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            letter-spacing: 0.04em;
+        }
+
+        /* Hairline rule with chapter label */
+        .rule-with-label {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: center;
+            gap: 1.25rem;
+        }
+        .rule-with-label .line {
+            height: 1px; background: var(--rule); width: 100%;
+        }
+
+        /* Pilar row hover treatment */
+        .pilar-row { position: relative; transition: padding 0.45s cubic-bezier(.2,.7,.2,1); }
+        .pilar-row::before {
+            content: ''; position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 0; background: var(--accent);
+            transition: width .35s cubic-bezier(.2,.7,.2,1);
+        }
+        .pilar-row:hover::before { width: 3px; }
+        .pilar-row:hover { padding-left: 1.25rem; }
+        .pilar-row:hover .pilar-arrow { transform: translateX(6px); color: var(--accent); }
+        .pilar-arrow { transition: transform .35s, color .35s; }
+
+        /* Case row */
+        .case-row { position: relative; }
+        .case-row .case-bracket {
+            transition: color .4s, transform .4s;
+        }
+        .case-row:hover .case-bracket { color: var(--accent); transform: translateX(-3px); }
+
+        /* Decorative serif italic accent */
+        .accent-italic {
+            font-family: 'Fraunces', serif;
+            font-style: italic;
+            font-weight: 400;
+            color: var(--accent);
+        }
+
+        /* Mono "tag" / kbd-like */
+        .mono-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.05em;
+            color: var(--ink-muted);
+            text-transform: uppercase;
+        }
+
+        /* Schema breadcrumb (signature element) */
+        .schema-crumb {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--ink-dim);
+            letter-spacing: 0.02em;
+        }
+        .schema-crumb .seg-active { color: var(--accent); }
+        .schema-crumb .seg-mid { color: var(--ink-muted); }
+
+        /* Certified tag (LookML reference) */
+        .cert {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.12em;
+            color: var(--accent-2);
+            border: 1px solid rgba(125,211,163,0.35);
+            padding: 2px 6px;
+            text-transform: uppercase;
+        }
+
+        /* Stack pill (mono engineering style) */
+        .stack-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            letter-spacing: 0.01em;
+            color: var(--ink);
+            border: 1px solid var(--rule);
+            padding: 6px 10px;
+            background: rgba(232,180,104,0.02);
+            transition: all .25s;
+        }
+        .stack-pill:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(232,180,104,0.06);
+        }
+        .stack-pill .at { color: var(--ink-dim); }
+
+        /* Nav active state */
+        .nav-link { position: relative; }
+        .nav-link[data-active="true"] { color: var(--accent); }
+        .nav-link[data-active="true"]::after {
+            content: ''; position: absolute;
+            left: 50%; bottom: -6px;
+            width: 4px; height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Display headline kerning */
+        .display-tight {
+            font-family: 'Fraunces', serif;
+            font-optical-sizing: auto;
+            letter-spacing: -0.04em;
+            line-height: 0.92;
+            font-weight: 500;
+        }
+
+        /* Corner annotation */
+        .corner-anno {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            letter-spacing: 0.16em;
+            color: var(--ink-dim);
+            text-transform: uppercase;
+        }
+
+        /* Arrow → motif */
+        .arrow-rail::before {
+            content: '→';
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            margin-right: .5ch;
+        }
+
+        /* Pulsing dot for status */
+        .status-dot {
+            display: inline-block; width: 6px; height: 6px;
+            background: var(--accent-2); border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(125,211,163,0.6);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(125,211,163,0.55); }
+            70% { box-shadow: 0 0 0 8px rgba(125,211,163,0); }
+            100% { box-shadow: 0 0 0 0 rgba(125,211,163,0); }
+        }
+
+        /* Engaged status — currently employed, not actively looking */
+        .status-engaged {
+            display: inline-block; width: 6px; height: 6px;
+            background: var(--accent); border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(232,180,104,0.55);
+            animation: pulseAmber 2s infinite;
+        }
+        @keyframes pulseAmber {
+            0%   { box-shadow: 0 0 0 0 rgba(232,180,104,0.55); }
+            70%  { box-shadow: 0 0 0 8px rgba(232,180,104,0); }
+            100% { box-shadow: 0 0 0 0 rgba(232,180,104,0); }
+        }
+
+        /* Subtle gradient frame for principles card */
+        .principles-card {
+            background: linear-gradient(180deg, rgba(232,180,104,0.04) 0%, transparent 60%), var(--elev);
+            border: 1px solid var(--rule);
+            position: relative;
+        }
+        .principles-card::after {
+            content: ''; position: absolute;
+            top: 0; right: 0;
+            width: 30%; height: 1px;
+            background: var(--accent);
+        }
+
+        /* Big chapter numerals */
+        .big-numeral {
+            font-family: 'Fraunces', serif;
+            font-style: italic;
+            font-weight: 300;
+            color: var(--ink-dim);
+            line-height: 1;
+        }
+
+        /* Underline on hover for inline links */
+        .ink-link {
+            color: var(--ink);
+            border-bottom: 1px solid var(--rule);
+            transition: border-color .25s, color .25s;
+        }
+        .ink-link:hover { color: var(--accent); border-color: var(--accent); }
+
+        /* Mobile menu */
+        @media (max-width: 768px) {
+            .display-tight { line-height: 0.96; }
+        }
+
+        /* Smooth focus for keyboard users */
+        a:focus-visible, button:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 4px;
+        }
+
+        /* Section anchor offset for fixed nav */
+        section[id] { scroll-margin-top: 90px; }
+    </style>
+</head>
+<body class="bg-bg text-ink antialiased grain selection:bg-accent selection:text-bg">
+
+    <!-- Scroll progress -->
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <!-- Corner annotations (decorative engineering-doc feel) -->
+    <div class="hidden lg:block fixed top-5 right-6 corner-anno z-40 pointer-events-none">
+        rev. 2026.04 / curitiba_BR
+    </div>
+
+    <!-- NAV -->
+    <nav class="fixed w-full bg-bg/85 backdrop-blur-md border-b border-rule z-50">
+        <div class="max-w-7xl mx-auto px-6 lg:px-10 py-4 flex justify-between items-center">
+            <a href="#top" class="flex items-center gap-2 group">
+                <span class="text-accent font-mono text-base">{</span>
+                <span class="text-ink font-mono tracking-tight text-sm">antoniacomi</span>
+                <span class="text-accent font-mono text-base">}</span>
+            </a>
+
+            <div class="hidden md:flex items-center gap-8 text-[13px] font-mono">
+                <a href="#sobre" class="nav-link text-ink-muted hover:text-ink transition-colors" data-section="sobre">
+                    <span class="text-ink-dim">[01]</span> <span class="lang-pt">sobre</span><span class="lang-en">about</span>
+                </a>
+                <a href="#pilares" class="nav-link text-ink-muted hover:text-ink transition-colors" data-section="pilares">
+                    <span class="text-ink-dim">[02]</span> <span class="lang-pt">pilares</span><span class="lang-en">pillars</span>
+                </a>
+                <a href="#cases" class="nav-link text-ink-muted hover:text-ink transition-colors" data-section="cases">
+                    <span class="text-ink-dim">[03]</span> cases
+                </a>
+                <a href="#contato" class="nav-link text-ink-muted hover:text-ink transition-colors" data-section="contato">
+                    <span class="text-ink-dim">[04]</span> <span class="lang-pt">contato</span><span class="lang-en">contact</span>
+                </a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button id="langToggle" class="text-[12px] font-mono hover:bg-rule/50 px-2 py-1 transition-colors border border-transparent hover:border-rule rounded" aria-label="Switch language" aria-pressed="false">
+                    <span id="langPT">PT</span> <span class="text-ink-dim">/</span> <span id="langEN">EN</span>
+                </button>
+
+            <a href="./cv-guilherme-antoniacomi.pdf" download class="hidden md:inline-flex items-center gap-2 text-[13px] font-mono text-ink hover:text-accent transition-colors border border-rule hover:border-accent px-3 py-1.5">
+                    <span class="text-accent">↓</span> <span class="lang-pt">cv.pdf</span><span class="lang-en">resume.pdf</span>
+                </a>
+            <button id="navToggle" class="md:hidden text-ink-muted text-2xl" aria-label="Menu">≡</button>
+        </div>
+        <div id="mobileMenu" class="md:hidden hidden border-t border-rule bg-bg/95">
+            <div class="px-6 py-4 flex flex-col gap-3 text-sm font-mono">
+                <a href="#sobre" class="text-ink-muted hover:text-accent">[01] <span class="lang-pt">sobre</span><span class="lang-en">about</span></a>
+                <a href="#pilares" class="text-ink-muted hover:text-accent">[02] <span class="lang-pt">pilares</span><span class="lang-en">pillars</span></a>
+                <a href="#cases" class="text-ink-muted hover:text-accent">[03] cases</a>
+                <a href="#contato" class="text-ink-muted hover:text-accent">[04] <span class="lang-pt">contato</span><span class="lang-en">contact</span></a>
+                <a href="./cv-guilherme-antoniacomi.pdf" download class="text-accent">↓ <span class="lang-pt">baixar cv</span><span class="lang-en">download resume</span></a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header id="top" class="relative min-h-screen flex items-end pt-32 pb-16 px-6 lg:px-10 overflow-hidden">
+        <!-- decorative schema lines -->
+        <svg class="schema-bg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1E2530" stroke-width="0.5"/>
+                </pattern>
+            </defs>
+            <rect width="1200" height="800" fill="url(#grid)"/>
+            <!-- schema diagram fragments -->
+            <g stroke="#2A3340" stroke-width="1" fill="none" opacity="0.7">
+                <rect x="780" y="120" width="180" height="44" rx="2"/>
+                <rect x="780" y="200" width="180" height="64" rx="2"/>
+                <rect x="990" y="160" width="180" height="84" rx="2"/>
+                <line x1="960" y1="142" x2="990" y2="180"/>
+                <line x1="960" y1="232" x2="990" y2="220"/>
+                <circle cx="960" cy="142" r="2.5" fill="#E8B468"/>
+                <circle cx="960" cy="232" r="2.5" fill="#E8B468"/>
+                <circle cx="990" cy="180" r="2.5" fill="#E8B468"/>
+                <circle cx="990" cy="220" r="2.5" fill="#E8B468"/>
+            </g>
+            <g font-family="JetBrains Mono, monospace" font-size="9" fill="#5A6070">
+                <text x="790" y="138">fact_sales</text>
+                <text x="790" y="218">dim_product</text>
+                <text x="1000" y="178">gold_kpi_revenue</text>
+            </g>
+        </svg>
+
+        <div class="relative z-10 max-w-7xl w-full mx-auto hero-enter">
+            <!-- 1. label -->
+            <div class="flex items-center gap-3 mb-10 corner-anno">
+                <span class="status-dot"></span>
+                <span class="lang-pt">analista de dados sênior &nbsp;//&nbsp; analytics engineer</span>
+                <span class="lang-en">senior data analyst &nbsp;//&nbsp; analytics engineer</span>
+                <span class="text-ink-dim hidden sm:inline">·&nbsp; curitiba — <span class="lang-pt">pr</span><span class="lang-en">brazil</span></span>
+            </div>
+
+            <!-- 2. monumental name -->
+            <h1 class="display-tight text-ink mb-10 text-[clamp(3.6rem,11vw,9.5rem)]">
+                Guilherme<br/>
+                <span class="italic font-light text-accent">Antoniacomi</span>
+            </h1>
+
+            <!-- 3. subtitle -->
+            <div class="max-w-3xl mb-12">
+                <p class="text-xl md:text-3xl leading-snug text-ink font-light">
+                    <span class="lang-pt">Simplifico <span class="accent-italic">arquiteturas complexas</span> para reduzir<span class="text-ink"> custos operacionais</span> e melhorar a<span class="accent-italic"> performance de sistemas.</span></span>
+                    <span class="lang-en">I streamline <span class="accent-italic">complex architectures</span> to improve<span class="text-ink"> system performance</span> and cut <span class="accent-italic"> operational costs</span></span><span class="cursor-blink"></span>
+                </p>
+                <p class="mt-6 text-base md:text-lg text-ink-muted max-w-2xl leading-relaxed">
+                    <span class="lang-pt">Modelagem dimensional em BigQuery, camada semântica em LookML e pipelines orquestrados em Dataform, tudo versionado em Git com PR review</span>
+                    <span class="lang-en">Dimensional modeling in BigQuery, semantic layer in LookML, and pipelines orchestrated in Dataform, all version-controlled in Git with PR reviews.</span>
+                </p>
+            </div>
+
+            <!-- 4. CTAs -->
+            <div class="flex flex-col sm:flex-row gap-3 mb-16">
+                <a href="#cases" class="group inline-flex items-center justify-between gap-6 bg-accent text-bg font-mono text-sm tracking-wide px-7 py-4 hover:bg-ink transition-colors">
+                    <span class="lang-pt">VER CASOS DE SUCESSO</span>
+                    <span class="lang-en">VIEW SUCCESS CASES</span>
+                    <span class="transition-transform group-hover:translate-x-1">→</span>
+                </a>
+                <a href="./cv-guilherme-antoniacomi.pdf" download class="group inline-flex items-center justify-between gap-6 border border-rule hover:border-accent text-ink font-mono text-sm tracking-wide px-7 py-4 transition-colors">
+                    <span class="lang-pt">BAIXAR CURRÍCULO</span>
+                    <span class="lang-en">DOWNLOAD RESUME</span>
+                    <span class="text-accent transition-transform group-hover:translate-y-0.5">↓</span>
+                </a>
+            </div>
+
+            <!-- 5. credibility -->
+            <div class="grid md:grid-cols-2 gap-x-10 gap-y-3 pt-8 border-t border-rule">
+                <div class="flex items-baseline gap-3">
+                    <span class="mono-tag"><span class="lang-pt">empresas</span><span class="lang-en">companies</span></span>
+                    <span class="font-mono text-xs text-ink">The&nbsp;Coffee · Odoo · FiberX · Secret&nbsp;Outlet</span>
+                </div>
+                <div class="flex items-baseline gap-3">
+                    <span class="mono-tag">stack</span>
+                    <span class="font-mono text-xs text-ink">BigQuery · Dataform · LookML · Python · Power&nbsp;BI</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- SOBRE -->
+    <section id="sobre" class="relative px-6 lg:px-10 py-28 lg:py-36 border-t border-rule">
+        <div class="max-w-7xl mx-auto">
+
+            <!-- Chapter rule -->
+            <div class="rule-with-label mb-16 reveal">
+                <div class="font-mono text-xs text-accent tracking-widest">[01] &nbsp;<span class="lang-pt">SOBRE</span><span class="lang-en">ABOUT</span></div>
+                <div class="line"></div>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-12 lg:gap-20">
+                <!-- Left: copy -->
+                <div class="lg:col-span-7 reveal">
+                   <h2 class="display-tight text-3xl md:text-5xl lg:text-6xl text-ink mb-10">
+                        <span class="lang-pt">A ponte entre <span class="accent-italic">Engenharia de Dados pesada</span> e <span class="accent-italic">decisão estratégica</span>.</span>
+                        <span class="lang-en">The bridge between <span class="accent-italic">heavy-lifting data engineering</span> and <span class="accent-italic">strategic decisions</span>.</span>
+                    </h2>
+
+                    <div class="space-y-5 text-base md:text-lg text-ink-muted leading-relaxed max-w-2xl lang-pt">
+                        <p>Trabalho no ponto onde engenharia de dados encontra decisão de negócio. Desenhei <span class="text-ink">Data Warehouses corporativos</span>, orquestrei pipelines em produção e construí <span class="text-ink">camadas semânticas</span> que sustentam o ciclo de finanças, comercial e operações.</p>
+                        <p>Mais do que criar dashboards, resolvo <span class="text-ink">problemas arquiteturais </span>na raiz. Isso inclui eliminar anomalias estatísticas, como <span class="text-ink">fan-outs e produtos cartesianos</span>, e otimizar custos de queries (<span class="text-accent font-mono text-[0.95em]">FinOps</span>) em ambientes Cloud.</p>
+                        <p>Um ambiente analítico só funciona de verdade quando <span class="text-ink">finanças, comercial e operações</span> olham para o mesmo painel e enxergam o mesmo número, sem planilhas paralelas. O que eu entrego não é apenas visualização de dados, mas a <span class="text-ink">infraestrutura de confiança</span> que sustenta a tomada de decisão.</p>
+                    </div>
+
+                    <div class="space-y-5 text-base md:text-lg text-ink-muted leading-relaxed max-w-2xl lang-en">
+                        <p>I work where heavy data engineering meets business decisions. I've designed <span class="text-ink">corporate Data Warehouses</span>, run pipelines in production, and built <span class="text-ink">semantic layers</span> that finance, sales, and operations rely on every closing cycle.</p>
+                        <p>Rather than just building dashboards, I solve <span class="text-ink">root architectural problems</span>. This ranges from eliminating statistical anomalies, like <span class="text-ink">fan-outs and Cartesian products</span>, to optimizing query costs (<span class="text-accent font-mono text-[0.95em]">FinOps</span>) in Cloud environments.</p>
+                        <p>An analytical environment only works when <span class="text-ink">finance, sales, and operations</span> look at the same dashboard and see the exact same number, without parallel spreadsheets. I don't just deliver data visualization. I build the <span class="text-ink">reliable infrastructure</span> that makes strategic decisions possible.</p>
+                    </div>
+
+                    <!-- Stack pills -->
+                    <div class="mt-12">
+                        <div class="mono-tag mb-4">// <span class="lang-pt">stack de atuação</span><span class="lang-en">tech stack</span></div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="stack-pill">SQL<span class="at">@</span>advanced</span>
+                            <span class="stack-pill">BigQuery<span class="at">@</span>gcp</span>
+                            <span class="stack-pill">Dataform<span class="at">@</span>gcp</span>
+                            <span class="stack-pill">LookML<span class="at">@</span>looker</span>
+                            <span class="stack-pill">Power&nbsp;BI<span class="at">@</span>microsoft</span>
+                            <span class="stack-pill">Python<span class="at">@</span>3.x</span>
+                            <span class="stack-pill">Odoo<span class="at">@</span>enterprise</span>
+                            <span class="stack-pill">MS&nbsp;Project<span class="at">@</span>api</span>
+                            <span class="stack-pill">Modelagem<span class="at">@</span>dimensional</span>
+                            <span class="stack-pill">Scrum<span class="at">@</span>agile</span>
+                        </div>
+                    </div>
+
+                    <!-- Languages -->
+                    <div class="mt-10 flex flex-wrap gap-x-8 gap-y-2 text-xs font-mono text-ink-muted">
+                        <span><span class="text-accent">PT</span> <span class="lang-pt">nativo</span><span class="lang-en">native</span></span>
+                        <span><span class="text-accent">EN</span> <span class="lang-pt">avançado</span><span class="lang-en">advanced</span></span>
+                        <span><span class="text-accent">ES</span> <span class="lang-pt">básico</span><span class="lang-en">basic</span></span>
+                    </div>
+                </div>
+
+                <!-- Right: principles card -->
+                <div class="lg:col-span-5 reveal">
+                    <div class="principles-card p-8 lg:p-10">
+                        <div class="flex items-center justify-between mb-8 pb-4 border-b border-rule">
+                            <span class="font-mono text-xs text-accent tracking-widest">// <span class="lang-pt">princípios</span><span class="lang-en">principles</span></span>
+                            <span class="cert">v.2026</span>
+                        </div>
+                        <ol class="space-y-8">
+                            <li>
+                                <div class="flex items-start gap-4">
+                                    <div class="big-numeral text-4xl">01</div>
+                                    <div class="lang-pt">
+                                        <h4 class="font-display text-xl text-ink mb-2 italic">Single Source of Truth ou nada.</h4>
+                                        <p class="text-sm text-ink-muted leading-relaxed">Métrica que precisa de explicação é métrica quebrada. Governança vem antes do gráfico.</p>
+                                    </div>
+                                    <div class="lang-en">
+                                        <h4 class="font-display text-xl text-ink mb-2 italic">Single Source of Truth or nothing.</h4>
+                                        <p class="text-sm text-ink-muted leading-relaxed">A metric that requires explanation is a broken metric. Governance comes before the chart.</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="flex items-start gap-4">
+                                    <div class="big-numeral text-4xl">02</div>
+                                    <div class="lang-pt">
+                                        <h4 class="font-display text-xl text-ink mb-2 italic">Custo é decisão de design.</h4>
+                                        <p class="text-sm text-ink-muted leading-relaxed">Particionamento, agregação e materialização são escolhas estratégicas, não detalhes técnicos.</p>
+                                    </div>
+                                    <div class="lang-en">
+                                        <h4 class="font-display text-xl text-ink mb-2 italic">Cost is a design decision.</h4>
+                                        <p class="text-sm text-ink-muted leading-relaxed">Partitioning, aggregation, and materialization are strategic choices, not technical details.</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="flex items-start gap-4">
+                                    <div class="big-numeral text-4xl">03</div>
+                                    <div class="lang-pt">
+                                        <h4 class="font-display text-xl text-ink mb-2 italic">Regra de negócio é o contrato.</h4>
+                                        <p class="text-sm text-ink-muted leading-relaxed">Não modelo dado em abstrato. Modelo a operação.</p>
+                                    </div>
+                                    <div class="lang-en">
+                                        <h4 class="font-display text-xl text-ink mb-2 italic">Business rules are the contract.</h4>
+                                        <p class="text-sm text-ink-muted leading-relaxed">I don't model data in the abstract. I model the operation.</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="flex items-start gap-4">
+                                    <div class="big-numeral text-4xl">04</div>
+                                    <div class="lang-pt">
+                                        <h4 class="font-display text-xl text-ink mb-2 italic">Pipeline é código.</h4>
+                                        <p class="text-sm text-ink-muted leading-relaxed">DAG explícito, versionado em Git, com PR review. Se a query roda escondida num scheduler, não existe.</p>
+                                    </div>
+                                    <div class="lang-en">
+                                        <h4 class="font-display text-xl text-ink mb-2 italic">Pipeline is code.</h4>
+                                        <p class="text-sm text-ink-muted leading-relaxed">Explicit DAG, Git-versioned, with PR reviews. If a query runs hidden in a scheduler, it doesn't exist.</p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PILARES -->
+    <section id="pilares" class="relative px-6 lg:px-10 py-28 lg:py-36 border-t border-rule">
+        <div class="max-w-7xl mx-auto">
+
+            <div class="rule-with-label mb-16 reveal">
+                <div class="font-mono text-xs text-accent tracking-widest">[02] &nbsp;<span class="lang-pt">PILARES DE ATUAÇÃO</span><span class="lang-en">CORE PILLARS</span></div>
+                <div class="line"></div>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-10 mb-16 reveal">
+                <h2 class="lg:col-span-7 display-tight text-3xl md:text-5xl text-ink">
+                    <span class="lang-pt">O que eu <span class="accent-italic">resolvo</span>, não apenas a ferramenta que eu uso.</span>
+                    <span class="lang-en">What I <span class="accent-italic">solve</span>, not just the tools I use.</span>
+                </h2>
+                <p class="lg:col-span-5 lg:col-start-8 text-ink-muted text-base lg:text-lg leading-relaxed self-end">
+                    <span class="lang-pt">Quatro frentes de atuação que cobrem do dado bruto à decisão executiva, com um único objetivo: subir o nível da pergunta que a sua operação consegue responder.</span>
+                    <span class="lang-en">Four core areas covering everything from raw data to executive decisions, with a single goal: to elevate the questions your operation can answer.</span>
+                </p>
+            </div>
+
+            <!-- Pilares as numbered rows -->
+            <div class="border-t border-rule">
+
+                <article class="pilar-row reveal grid lg:grid-cols-12 gap-6 lg:gap-10 items-start py-10 border-b border-rule">
+                    <div class="lg:col-span-2 flex items-baseline gap-3">
+                        <span class="big-numeral text-5xl lg:text-6xl">01</span>
+                    </div>
+                    <div class="lg:col-span-7">
+                        <h3 class="font-display text-2xl lg:text-3xl text-ink mb-3 tracking-tight">
+                            <span class="lang-pt">Arquitetura &amp; Engenharia de Dados</span><span class="lang-en">Data Architecture &amp; Engineering</span>
+                        </h3>
+                        <p class="text-ink-muted leading-relaxed lang-pt">Concepção e otimização de <span class="text-ink">Data Warehouses corporativos</span> no BigQuery. Executo modelagem dimensional, estratégias de particionamento e padronização de pipelines ELT com foco em FinOps.</p>
+                        <p class="text-ink-muted leading-relaxed lang-en">Design and optimization of <span class="text-ink">enterprise Data Warehouses</span> in BigQuery. I implement dimensional modeling, partitioning strategies, and standardized ELT pipelines focused on FinOps.</p>
+                    </div>
+                    <div class="lg:col-span-3 flex items-start lg:justify-end">
+                        <div class="w-full min-h-[7rem] text-xs font-mono text-ink-muted bg-elev2 border border-rule p-3 leading-relaxed">
+                            <span class="text-accent"><span class="lang-pt">resolve</span><span class="lang-en">solves</span>&nbsp;»</span><br/>
+                            <span class="lang-pt">"fatura da cloud fora de controle"</span><span class="lang-en">"cloud bill out of control"</span><br/>
+                            <span class="lang-pt">"dashboard demora 40 segundos"</span><span class="lang-en">"dashboard takes 40s to load"</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="pilar-row reveal grid lg:grid-cols-12 gap-6 lg:gap-10 items-start py-10 border-b border-rule">
+                    <div class="lg:col-span-2"><span class="big-numeral text-5xl lg:text-6xl">02</span></div>
+                    <div class="lg:col-span-7">
+                        <h3 class="font-display text-2xl lg:text-3xl text-ink mb-3 tracking-tight">
+                            <span class="lang-pt">Camada Semântica &amp; Governança</span><span class="lang-en">Semantic Layer &amp; Governance</span>
+                        </h3>
+                        <p class="text-ink-muted leading-relaxed lang-pt">Arquitetura de <span class="text-ink">modelos LookML</span>. Defino métricas certificadas, controlo chasm traps e aplico aggregate awareness. Versiono e reviso o modelo de dados exatamente como software.</p>
+                        <p class="text-ink-muted leading-relaxed lang-en"><span class="text-ink">LookML architecture</span>. I define certified measures, control chasm traps, and implement aggregate awareness. I version and review data models exactly like software.</p>
+                    </div>
+                    <div class="lg:col-span-3 flex items-start lg:justify-end">
+                        <div class="w-full min-h-[7rem] text-xs font-mono text-ink-muted bg-elev2 border border-rule p-3 leading-relaxed">
+                            <span class="text-accent"><span class="lang-pt">resolve</span><span class="lang-en">solves</span>&nbsp;»</span><br/>
+                            <span class="lang-pt">"kpi do financeiro ≠ do comercial"</span><span class="lang-en">"finance KPI ≠ sales KPI"</span><br/>
+                            <span class="lang-pt">"cada área tem sua própria receita"</span><span class="lang-en">"each department has its own revenue number"</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="pilar-row reveal grid lg:grid-cols-12 gap-6 lg:gap-10 items-start py-10 border-b border-rule">
+                    <div class="lg:col-span-2"><span class="big-numeral text-5xl lg:text-6xl">03</span></div>
+                    <div class="lg:col-span-7">
+                         <h3 class="font-display text-2xl lg:text-3xl text-ink mb-3 tracking-tight">
+                            <span class="lang-pt">Business Intelligence &amp; Visualização</span><span class="lang-en">Business Intelligence &amp; Executive Viz</span>
+                        </h3>
+                        <p class="text-ink-muted leading-relaxed lang-pt">Dashboards em <span class="text-ink">Looker e Power BI</span> desenhados para quem toma a decisão, não para o analista que os construiu. Foco em hierarquia de informação clara e narrativa de dados para o C-level.</p>
+                        <p class="text-ink-muted leading-relaxed lang-en"><span class="text-ink">Looker and Power BI</span> dashboards designed for the decision-maker, not the analyst who built them. Focused on clear information hierarchy and data storytelling tailored for the C-level.</p>
+                    </div>
+                    <div class="lg:col-span-3 flex items-start lg:justify-end">
+                        <div class="w-full min-h-[7rem] text-xs font-mono text-ink-muted bg-elev2 border border-rule p-3 leading-relaxed">
+                            <span class="text-accent"><span class="lang-pt">resolve</span><span class="lang-en">solves</span>&nbsp;»</span><br/>
+                            <span class="lang-pt">"C-level não usa o dashboard"</span><span class="lang-en">"C-level ignores the dashboard"</span><br/>
+                            <span class="lang-pt">"reunião ainda roda em powerpoint"</span><span class="lang-en">"meetings still run on powerpoints"</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="pilar-row reveal grid lg:grid-cols-12 gap-6 lg:gap-10 items-start py-10">
+                    <div class="lg:col-span-2"><span class="big-numeral text-5xl lg:text-6xl">04</span></div>
+                    <div class="lg:col-span-7">
+                        <h3 class="font-display text-2xl lg:text-3xl text-ink mb-3 tracking-tight">
+                            <span class="lang-pt">Automação &amp; Integração de Sistemas</span><span class="lang-en">Automation &amp; System Integration</span>
+                        </h3>
+                        <p class="text-ink-muted leading-relaxed lang-pt">Pipelines em <span class="text-ink">Python</span> integrando ERPs, ferramentas de gestão e APIs REST com camadas de BI. Elimino relatórios manuais recorrentes e expando as funcionalidades nativas dos sistemas.</p>
+                        <p class="text-ink-muted leading-relaxed lang-en"><span class="text-ink">Python</span> pipelines integrating ERPs, management tools, and REST APIs with BI layers. I eliminate recurring manual reports and extend core system functionalities.</p>
+                    </div>
+                    <div class="lg:col-span-3 flex items-start lg:justify-end">
+                        <div class="w-full min-h-[7rem] text-xs font-mono text-ink-muted bg-elev2 border border-rule p-3 leading-relaxed">
+                            <span class="text-accent"><span class="lang-pt">resolve</span><span class="lang-en">solves</span>&nbsp;»</span><br/>
+                            <span class="lang-pt">"status report = 1 dia por semana"</span><span class="lang-en">"status report = 1 full day/week"</span><br/>
+                            <span class="lang-pt">"erp não conversa com o bi"</span><span class="lang-en">"ERP doesn't talk to the BI tool"</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- CASES -->
+    <section id="cases" class="relative px-6 lg:px-10 py-28 lg:py-36 border-t border-rule bg-elev/40">
+        <div class="max-w-7xl mx-auto">
+
+            <div class="rule-with-label mb-16 reveal">
+                <div class="font-mono text-xs text-accent tracking-widest">[03] &nbsp;<span class="lang-pt">CASOS DE SUCESSO</span><span class="lang-en">SUCCESS CASES</span></div>
+                <div class="line"></div>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-10 mb-20 reveal">
+                <h2 class="lg:col-span-8 display-tight text-3xl md:text-5xl lg:text-6xl text-ink">
+                    <span class="lang-pt">Sete frentes. <span class="accent-italic">Um padrão</span>: arquitetura primeiro, dashboard depois.</span>
+                    <span class="lang-en">Seven cases. <span class="accent-italic">One pattern</span>: architecture first, dashboard later.</span>
+                </h2>
+                <p class="lg:col-span-4 text-ink-muted text-sm lg:text-base leading-relaxed self-end font-mono">
+                    <span class="lang-pt">// empresas reais — dados sensíveis e<br/>// números absolutos abstraídos.<br/>// código genérico equivalente em <a href="https://github.com/GuiAntoniacomi" class="ink-link">github.com/GuiAntoniacomi</a></span>
+                    <span class="lang-en">// real companies — sensitive data and<br/>// absolute numbers redacted.<br/>// equivalent generic code at <a href="https://github.com/GuiAntoniacomi" class="ink-link">github.com/GuiAntoniacomi</a></span>
+                </p>
+            </div>
+
+            <!-- Cases -->
+            <div class="space-y-px">
+
+                <!-- CASE 01 -->
+                <article class="case-row reveal bg-bg border border-rule p-8 lg:p-12 hover:border-ink-dim transition-colors">
+                    <header class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-rule mb-8">
+                        <div class="schema-crumb">
+                            <span class="case-bracket">[01]</span> &nbsp;
+                            <span class="seg-mid">thecoffee</span>.<span class="seg-mid">dw</span>.<span class="seg-active">case_01_visao_360</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="mono-tag"><span class="lang-pt">eng. de dados &nbsp;+&nbsp; bi</span><span class="lang-en">data eng &nbsp;+&nbsp; bi</span></span>
+                            <span class="cert">2025</span>
+                        </div>
+                    </header>
+
+                    <h3 class="display-tight text-3xl md:text-4xl lg:text-5xl text-ink mb-10">
+                        <span class="lang-pt">Data Warehouse Corporativo &amp; <span class="accent-italic">Visão 360º Financeira</span></span>
+                        <span class="lang-en">Corporate Data Warehouse &amp; <span class="accent-italic">Financial 360º View</span></span>
+                    </h3>
+
+                    <div class="grid md:grid-cols-3 gap-8 lg:gap-12 mb-10">
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// problema</span><span class="lang-en">// problem</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                Não existia uma fonte única de verdade financeira. A complexidade do produto (combos, customizações, descontos) impedia uma visão consolidada que a diretoria pudesse usar para decidir abertura de loja, mix e precificação.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                There was no single source of financial truth. Product complexity (combos, customizations, discounts) blocked any consolidated view the board could use to decide on store openings, mix, and pricing.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// solução</span><span class="lang-en">// solution</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                Concepção e construção do <span class="text-ink">Data Warehouse em BigQuery</span>, do zero. Modelagem dimensional unificando vendas × produtos × personalizações × conciliação financeira. Pipelines ELT versionados, com camadas Bronze / Silver / Gold.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                Design and construction of the <span class="text-ink">Data Warehouse in BigQuery</span>, from scratch. Dimensional modeling unifying sales × products × customizations × financial reconciliation. Versioned ELT pipelines with Bronze / Silver / Gold layers.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// impacto</span><span class="lang-en">// impact</span></div>
+                            <p class="text-sm lg:text-base text-ink leading-relaxed lang-pt">
+                                Visão 360º consolidada em camada única para finanças, comercial e diretoria. Reuniões de resultado migraram de planilhas manuais para o dashboard ao vivo. Base arquitetural de todos os demais cases.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink leading-relaxed lang-en">
+                                Consolidated 360º view in a single layer for finance, sales, and the board. Results meetings moved from manual spreadsheets to a live dashboard. Architectural foundation for every other case in this list.
+                            </p>
+                        </div>
+                    </div>
+
+                    <a href="#" class="inline-flex items-center gap-3 font-mono text-xs text-ink-muted hover:text-accent transition-colors border-t border-rule pt-5 w-full sm:w-auto">
+                        <span class="text-accent">↗</span>
+                        <span>github.com/GuiAntoniacomi/<span class="text-ink">bigquery-dw-finance-pattern</span></span>
+                    </a>
+                </article>
+
+                <!-- CASE 02 -->
+                <article class="case-row reveal bg-bg border border-rule p-8 lg:p-12 hover:border-ink-dim transition-colors">
+                    <header class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-rule mb-8">
+                        <div class="schema-crumb">
+                            <span class="case-bracket">[02]</span> &nbsp;
+                            <span class="seg-mid">thecoffee</span>.<span class="seg-mid">looker</span>.<span class="seg-active">case_02_fanout_resolution</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="mono-tag"><span class="lang-pt">semântica &nbsp;+&nbsp; lookml</span><span class="lang-en">semantic &nbsp;+&nbsp; lookml</span></span>
+                            <span class="cert">// certified</span>
+                        </div>
+                    </header>
+
+                    <h3 class="display-tight text-3xl md:text-4xl lg:text-5xl text-ink mb-10">
+                        <span class="lang-pt">Camada Semântica em LookML &amp; <span class="accent-italic">eliminação de fan-out</span></span>
+                        <span class="lang-en">LookML Semantic Layer &amp; <span class="accent-italic">fan-out elimination</span></span>
+                    </h3>
+
+                    <div class="grid md:grid-cols-3 gap-8 lg:gap-12 mb-10">
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// problema</span><span class="lang-en">// problem</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                Múltiplas tabelas-fato (vendas, produtos, financeiro) compartilhando dimensões em granularidades diferentes. Joins ingênuos geravam <span class="text-ink">produtos cartesianos silenciosos</span> — receita inflada, ticket médio distorcido e divergência entre áreas no mesmo período.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                Multiple fact tables (sales, products, finance) sharing dimensions at different grains. Naive joins produced <span class="text-ink">silent Cartesian products</span> — inflated revenue, distorted ticket size, and disagreement between teams on the same period.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// solução</span><span class="lang-en">// solution</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                Arquitetura completa da camada semântica em LookML, com <span class="text-ink">symmetric aggregates</span> nos joins many-to-many críticos. Layer de measures certificadas (<span class="font-mono text-accent-2">#&nbsp;CERTIFIED</span>) versionadas e protegidas por PR review.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                Full LookML semantic-layer architecture with <span class="text-ink">symmetric aggregates</span> on the critical many-to-many joins. Certified measures (<span class="font-mono text-accent-2">#&nbsp;CERTIFIED</span>) versioned and protected by PR review.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// impacto</span><span class="lang-en">// impact</span></div>
+                            <p class="text-sm lg:text-base text-ink leading-relaxed lang-pt">
+                                Convergência de KPIs entre finanças, comercial e operações em ciclo único de fechamento. Eliminação dos relatórios paralelos em Excel. O LookML virou referência interna — documentação viva da operação.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink leading-relaxed lang-en">
+                                Convergent KPIs across finance, sales, and ops in a single closing cycle. Parallel Excel reports gone. The LookML became the internal reference — living documentation of the operation.
+                            </p>
+                        </div>
+                    </div>
+
+                    <a href="https://github.com/GuiAntoniacomi/lookml-fanout-symmetric-aggregates" target="_blank" rel="noopener" class="inline-flex items-center gap-3 font-mono text-xs text-ink-muted hover:text-accent transition-colors border-t border-rule pt-5 w-full sm:w-auto">
+                        <span class="text-accent">↗</span>
+                        <span>github.com/GuiAntoniacomi/<span class="text-ink">lookml-fanout-symmetric-aggregates</span></span>
+                    </a>
+                </article>
+
+                <!-- CASE 03 -->
+                <article class="case-row reveal bg-bg border border-rule p-8 lg:p-12 hover:border-ink-dim transition-colors">
+                    <header class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-rule mb-8">
+                        <div class="schema-crumb">
+                            <span class="case-bracket">[03]</span> &nbsp;
+                            <span class="seg-mid">thecoffee</span>.<span class="seg-mid">dataops</span>.<span class="seg-active">case_03_dataform_migration</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="mono-tag"><span class="lang-pt">orquestração &nbsp;+&nbsp; dataops</span><span class="lang-en">orchestration &nbsp;+&nbsp; dataops</span></span>
+                            <span class="cert">2026</span>
+                        </div>
+                    </header>
+
+                    <h3 class="display-tight text-3xl md:text-4xl lg:text-5xl text-ink mb-10">
+                        <span class="lang-pt">Pipeline as Code &amp; <span class="accent-italic">migração para Dataform</span></span>
+                        <span class="lang-en">Pipeline as Code &amp; <span class="accent-italic">Dataform migration</span></span>
+                    </h3>
+
+                    <div class="grid md:grid-cols-3 gap-8 lg:gap-12 mb-10">
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// problema</span><span class="lang-en">// problem</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                Pipeline rodando em <span class="text-ink">BigQuery Scheduled Queries</span> — sem versionamento, sem DAG explícito, sem PR review. Mudança numa tabela quebrava outra silenciosamente. Tabelas em full-refresh diário sem necessidade, gerando custo invisível.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                Pipeline running on <span class="text-ink">BigQuery Scheduled Queries</span> — no version control, no explicit DAG, no PR review. A change to one table silently broke another. Tables on daily full-refresh with no reason, generating invisible cost.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// solução</span><span class="lang-en">// solution</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                Migração para Dataform com <span class="font-mono text-accent-2">${ref()}</span> em todas as dependências, DAG de 7 fases, workflow configs versionadas e scripts utilitários em Python para automatizar a conversão. Pattern <span class="text-ink">A/B/C/D</span> — quatro estágios de validação automatizada — garantindo paridade pré/pós em cada migração para incremental.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                Migration to Dataform with <span class="font-mono text-accent-2">${ref()}</span> on every dependency, a 7-phase DAG, versioned workflow configs, and Python utility scripts to automate the conversion. <span class="text-ink">A/B/C/D</span> pattern — four automated validation stages — guaranteeing pre/post parity on every incremental migration.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// impacto</span><span class="lang-en">// impact</span></div>
+                            <div class="text-sm lg:text-base text-ink leading-relaxed">
+                                <div class="grid grid-cols-2 gap-4 mb-3">
+                                    <div class="border-l-2 border-accent pl-3">
+                                        <div class="font-mono text-2xl text-accent">91</div>
+                                        <div class="text-xs text-ink-muted"><span class="lang-pt">arquivos sqlx<br/>versionados em git</span><span class="lang-en">sqlx files<br/>versioned in git</span></div>
+                                    </div>
+                                    <div class="border-l-2 border-accent pl-3">
+                                        <div class="font-mono text-2xl text-accent">165</div>
+                                        <div class="text-xs text-ink-muted"><span class="lang-pt">refs migradas<br/>para o DAG</span><span class="lang-en">refs migrated<br/>to the DAG</span></div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-ink-muted lang-pt">Pipeline auditável em Git, redução de custo via incremental, onboarding de novo analista cai de "leia 91 scheduled queries" para "leia o repo".</p>
+                                <p class="text-xs text-ink-muted lang-en">Auditable pipeline in Git, cost reduction via incremental, new-analyst onboarding drops from "read 91 scheduled queries" to "read the repo."</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="https://github.com/GuiAntoniacomi/dataform-bigquery-pipeline-pattern" target="_blank" rel="noopener" class="inline-flex items-center gap-3 font-mono text-xs text-ink-muted hover:text-accent transition-colors border-t border-rule pt-5 w-full sm:w-auto">
+                        <span class="text-accent">↗</span>
+                        <span>github.com/GuiAntoniacomi/<span class="text-ink">dataform-bigquery-pipeline-pattern</span></span>
+                    </a>
+                </article>
+
+                <!-- CASE 04 -->
+                <article class="case-row reveal bg-bg border border-rule p-8 lg:p-12 hover:border-ink-dim transition-colors">
+                    <header class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-rule mb-8">
+                        <div class="schema-crumb">
+                            <span class="case-bracket">[04]</span> &nbsp;
+                            <span class="seg-mid">thecoffee</span>.<span class="seg-mid">ml</span>.<span class="seg-active">case_04_store_clusters_v3</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="mono-tag"><span class="lang-pt">modelagem analítica &nbsp;+&nbsp; ml</span><span class="lang-en">analytical modeling &nbsp;+&nbsp; ml</span></span>
+                            <span class="cert">2026</span>
+                        </div>
+                    </header>
+
+                    <h3 class="display-tight text-3xl md:text-4xl lg:text-5xl text-ink mb-10">
+                        <span class="lang-pt">Health Score Multi-país &amp; <span class="accent-italic">clusterização de lojas</span></span>
+                        <span class="lang-en">Multi-country Health Score &amp; <span class="accent-italic">store clustering</span></span>
+                    </h3>
+
+                    <div class="grid md:grid-cols-3 gap-8 lg:gap-12 mb-10">
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// problema</span><span class="lang-en">// problem</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                Rede internacional de franquias com lojas em <span class="text-ink">contextos econômicos heterogêneos</span> — moeda, paridade de poder de compra, maturidade de operação e perfil de público completamente diferentes. Comparar "loja A vs. loja B" em valores absolutos era enganoso, e a diretoria precisava de ranking ajustado e segmentação acionável.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                International franchise network with stores in <span class="text-ink">heterogeneous economic contexts</span> — different currency, purchasing power parity, operational maturity, and customer profile. Comparing "store A vs. store B" in absolute terms was misleading, and the board needed an adjusted ranking and actionable segmentation.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// solução</span><span class="lang-en">// solution</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                Modelo de <span class="text-ink">health score</span> ponderado em SQL nativo BigQuery, combinando performance, atingimento de meta, score digital e maturidade. Tags semânticas automáticas: <span class="font-mono text-accent-2">store_maturity</span> (Ramp-Up / Jovem / Madura / Consolidada), <span class="font-mono text-accent-2">label_daypart</span>, <span class="font-mono text-accent-2">label_daytype</span> e <span class="font-mono text-accent-2">ppp_cluster</span> (Tier 1–4 por paridade de poder de compra).
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                Weighted <span class="text-ink">health-score</span> model in native BigQuery SQL, combining performance, target attainment, digital score, and maturity. Automatic semantic tags: <span class="font-mono text-accent-2">store_maturity</span> (Ramp-Up / Young / Mature / Established), <span class="font-mono text-accent-2">label_daypart</span>, <span class="font-mono text-accent-2">label_daytype</span>, and <span class="font-mono text-accent-2">ppp_cluster</span> (Tier 1–4 by purchasing power parity).
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// impacto</span><span class="lang-en">// impact</span></div>
+                            <p class="text-sm lg:text-base text-ink leading-relaxed lang-pt">
+                                Ranking comparável entre lojas de países distintos. A diretoria de operações passou a discutir loja por <span class="text-ink">cluster comportamental</span> ("Madura, almoço, dia de semana") em vez de média global. Modelo consumido em Looker como <span class="font-mono text-accent">single source</span> para health score da rede.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink leading-relaxed lang-en">
+                                Comparable ranking across stores in different countries. Operations leadership now discusses stores by <span class="text-ink">behavioral cluster</span> ("Mature, lunch, weekday") instead of global averages. Model consumed in Looker as the <span class="font-mono text-accent">single source</span> for the network's health score.
+                            </p>
+                        </div>
+                    </div>
+
+                    <a href="https://github.com/GuiAntoniacomi/bigquery-store-clustering-pattern" target="_blank" rel="noopener" class="inline-flex items-center gap-3 font-mono text-xs text-ink-muted hover:text-accent transition-colors border-t border-rule pt-5 w-full sm:w-auto">
+                        <span class="text-accent">↗</span>
+                        <span>github.com/GuiAntoniacomi/<span class="text-ink">bigquery-store-clustering-pattern</span></span>
+                    </a>
+                </article>
+
+                <!-- CASE 05 -->
+                <article class="case-row reveal bg-bg border border-rule p-8 lg:p-12 hover:border-ink-dim transition-colors">
+                    <header class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-rule mb-8">
+                        <div class="schema-crumb">
+                            <span class="case-bracket">[05]</span> &nbsp;
+                            <span class="seg-mid">fiberx</span>.<span class="seg-mid">pmo</span>.<span class="seg-active">case_05_msproject_pipeline</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="mono-tag"><span class="lang-pt">automação &nbsp;+&nbsp; integração</span><span class="lang-en">automation &nbsp;+&nbsp; integration</span></span>
+                            <span class="cert">2024</span>
+                        </div>
+                    </header>
+
+                    <h3 class="display-tight text-3xl md:text-4xl lg:text-5xl text-ink mb-10">
+                        <span class="lang-pt">Pipeline Python para <span class="accent-italic">portfólio de projetos</span></span>
+                        <span class="lang-en">Python pipeline for <span class="accent-italic">project portfolio</span></span>
+                    </h3>
+
+                    <div class="grid md:grid-cols-3 gap-8 lg:gap-12 mb-10">
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// problema</span><span class="lang-en">// problem</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                Status consolidado tomava um dia útil. O dado existia, mas estava preso em <span class="text-ink">MS Project</span> e planilhas, tornando os relatórios executivos obsoletos antes de serem apresentados.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                Consolidated status took a full business day. The data existed but was locked in <span class="text-ink">MS Project</span> and spreadsheets, making executive reports obsolete before they were even presented.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// solução</span><span class="lang-en">// solution</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                Pipeline em Python normalizando cronogramas e APIs internas para um modelo único de tarefa / marco / recurso. Camada de qualidade detectando atrasos e dependências quebradas. Publicação automática em <span class="text-ink">Power BI</span> via REST API (push dataset).
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                Python pipeline normalizing schedules and internal APIs into a single task / milestone / resource model. Quality layer detecting delays and broken dependencies. Automatic publishing to <span class="text-ink">Power BI</span> via REST API (push dataset).
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// impacto</span><span class="lang-en">// impact</span></div>
+                            <p class="text-sm lg:text-base text-ink leading-relaxed lang-pt">
+                                Janela de atualização caiu de <span class="font-mono text-accent">um dia inteiro → poucas horas</span>. Reuniões de comitê passaram a discutir ação, não a corrigir dados em tempo real. Padrão replicado em outras frentes.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink leading-relaxed lang-en">
+                                Refresh window dropped from <span class="font-mono text-accent">a full day → a few hours</span>. Steering committee meetings shifted to discussing action instead of fixing data live. Pattern replicated to other tracks.
+                            </p>
+                        </div>
+                    </div>
+
+                    <a href="#" class="inline-flex items-center gap-3 font-mono text-xs text-ink-muted hover:text-accent transition-colors border-t border-rule pt-5 w-full sm:w-auto">
+                        <span class="text-accent">↗</span>
+                        <span>github.com/GuiAntoniacomi/<span class="text-ink">python-msproject-powerbi-pipeline</span></span>
+                    </a>
+                </article>
+
+                <!-- CASE 06 -->
+                <article class="case-row reveal bg-bg border border-rule p-8 lg:p-12 hover:border-ink-dim transition-colors">
+                    <header class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-rule mb-8">
+                        <div class="schema-crumb">
+                            <span class="case-bracket">[06]</span> &nbsp;
+                            <span class="seg-mid">odoo</span>.<span class="seg-mid">erp</span>.<span class="seg-active">case_06_implantacao_custom</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="mono-tag"><span class="lang-pt">erp &nbsp;+&nbsp; análise de negócio</span><span class="lang-en">erp &nbsp;+&nbsp; business analysis</span></span>
+                            <span class="cert">2025</span>
+                        </div>
+                    </header>
+
+                    <h3 class="display-tight text-3xl md:text-4xl lg:text-5xl text-ink mb-10">
+                        <span class="lang-pt">Implantação ERP &amp; <span class="accent-italic">customização de negócio</span></span>
+                        <span class="lang-en">ERP Implementation &amp; <span class="accent-italic">business customization</span></span>
+                    </h3>
+
+                    <div class="grid md:grid-cols-3 gap-8 lg:gap-12 mb-10">
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// problema</span><span class="lang-en">// problem</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                O ERP padrão atendia <span class="text-ink">80% do processo</span>, mas os 20% restantes — exatamente os diferenciais competitivos da operação — exigiam customização técnica e tradução de regra de negócio.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                The default ERP covered <span class="text-ink">80% of the process</span>, but the remaining 20% — exactly the operation's competitive differentiators — required technical customization and business-rule translation.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// solução</span><span class="lang-en">// solution</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                Levantamento de requisitos AS-IS × TO-BE, customização do Odoo via <span class="text-ink">Python / HTML / CSS / XML</span>, construção de relatórios analíticos específicos e condução end-to-end (escopo, prazo, orçamento, go-live).
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                AS-IS × TO-BE requirements gathering, Odoo customization via <span class="text-ink">Python / HTML / CSS / XML</span>, custom analytical reports, and end-to-end project lead (scope, schedule, budget, go-live).
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// impacto</span><span class="lang-en">// impact</span></div>
+                            <p class="text-sm lg:text-base text-ink leading-relaxed lang-pt">
+                                Implantações entregues no prazo e orçamento. Redução drástica do gap funcional. ERP usado, não evitado — base para o próximo passo: conectar Odoo a uma camada analítica externa (BigQuery + Looker).
+                            </p>
+                            <p class="text-sm lg:text-base text-ink leading-relaxed lang-en">
+                                Implementations delivered on time and on budget. Functional gap dramatically reduced. The ERP gets used, not avoided — foundation for the next step: connecting Odoo to an external analytical layer (BigQuery + Looker).
+                            </p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- CASE 07 -->
+                <article class="case-row reveal bg-bg border border-rule p-8 lg:p-12 hover:border-ink-dim transition-colors">
+                    <header class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-rule mb-8">
+                        <div class="schema-crumb">
+                            <span class="case-bracket">[07]</span> &nbsp;
+                            <span class="seg-mid">secret_outlet</span>.<span class="seg-mid">bi</span>.<span class="seg-active">case_07_reporting_automation</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="mono-tag">power bi &nbsp;+&nbsp; python</span>
+                            <span class="cert">2021–2024</span>
+                        </div>
+                    </header>
+
+                    <h3 class="display-tight text-3xl md:text-4xl lg:text-5xl text-ink mb-10">
+                        <span class="lang-pt">Escala Analítica &amp; <span class="accent-italic">automação de reporting</span></span>
+                        <span class="lang-en">Analytical Scale &amp; <span class="accent-italic">reporting automation</span></span>
+                    </h3>
+
+                    <div class="grid md:grid-cols-3 gap-8 lg:gap-12 mb-10">
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// problema</span><span class="lang-en">// problem</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                Baixa eficiência na análise de dados operacionais e <span class="text-ink">tempo excessivo</span> gasto pelas equipes na preparação manual de relatórios gerenciais recorrentes.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                Low efficiency in operational data analysis and <span class="text-ink">too much time</span> spent by teams manually preparing recurring management reports.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// solução</span><span class="lang-en">// solution</span></div>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-pt">
+                                Desenvolvimento de dashboards interativos em <span class="text-ink">Power BI</span> para áreas de negócio e automação de extrações / ETL com scripts estruturados em <span class="text-ink">Python</span>, padronizando o ciclo de reporting.
+                            </p>
+                            <p class="text-sm lg:text-base text-ink-muted leading-relaxed lang-en">
+                                Interactive <span class="text-ink">Power BI</span> dashboards built for business areas, plus extraction / ETL automation with structured <span class="text-ink">Python</span> scripts, standardizing the reporting cycle.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="mono-tag mb-3 text-accent"><span class="lang-pt">// impacto</span><span class="lang-en">// impact</span></div>
+                            <div class="text-sm lg:text-base text-ink leading-relaxed">
+                                <div class="grid grid-cols-2 gap-4 mb-3">
+                                    <div class="border-l-2 border-accent pl-3">
+                                        <div class="font-mono text-2xl text-accent">+30%</div>
+                                        <div class="text-xs text-ink-muted"><span class="lang-pt">eficiência<br/>análise de dados</span><span class="lang-en">data analysis<br/>efficiency</span></div>
+                                    </div>
+                                    <div class="border-l-2 border-accent pl-3">
+                                        <div class="font-mono text-2xl text-accent">−25%</div>
+                                        <div class="text-xs text-ink-muted"><span class="lang-pt">tempo de preparação<br/>de relatórios</span><span class="lang-en">report-prep<br/>time</span></div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-ink-muted lang-pt">Resultado consolidado em ciclo recorrente — não em sprint.</p>
+                                <p class="text-xs text-ink-muted lang-en">Consolidated result in a recurring cycle — not a sprint.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="#" class="inline-flex items-center gap-3 font-mono text-xs text-ink-muted hover:text-accent transition-colors border-t border-rule pt-5 w-full sm:w-auto">
+                        <span class="text-accent">↗</span>
+                        <span>github.com/GuiAntoniacomi/<span class="text-ink">python-reporting-automation</span></span>
+                    </a>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTATO -->
+   <section id="contato" class="relative px-6 lg:px-10 py-28 lg:py-36 border-t border-rule">
+        <div class="max-w-7xl mx-auto">
+
+            <div class="rule-with-label mb-16 reveal">
+                <div class="font-mono text-xs text-accent tracking-widest">[04] &nbsp;<span class="lang-pt">CONTATO</span><span class="lang-en">CONTACT</span></div>
+                <div class="line"></div>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-10 lg:gap-20 items-start">
+                <div class="lg:col-span-7 reveal">
+                    <h2 class="display-tight text-4xl md:text-6xl lg:text-7xl text-ink mb-10">
+                        <span class="lang-pt">Sempre aberto a uma <span class="accent-italic">boa discussão técnica</span> sobre dados.</span>
+                        <span class="lang-en">Always open to a <span class="accent-italic">good technical discussion</span> about data.</span>
+                    </h2>
+
+                    <div class="max-w-2xl mb-10">
+                        <div class="mono-tag mb-3">// <span class="lang-pt">posição atual</span><span class="lang-en">current position</span></div>
+                        <p class="font-display text-2xl lg:text-3xl text-ink mb-5 leading-snug">
+                            <span class="lang-pt">Analista de Dados Sênior</span><span class="lang-en">Senior Data Analyst</span> <span class="text-ink-dim font-sans text-lg">@</span>
+                            <a href="https://thecoffee.jp/" target="_blank" rel="noopener noreferrer" class="accent-italic inline-flex items-baseline gap-1.5 hover:underline underline-offset-4 decoration-1 decoration-accent/60 group">
+                                The Coffee
+                                <span class="text-base text-accent transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">↗</span>
+                            </a>
+                        </p>
+                        <p class="text-ink-muted text-lg leading-relaxed lang-pt">
+                            Sinta-se à vontade para entrar em contato. Gosto bastante de trocar ideias sobre arquitetura analítica, resolução de problemas e o dia a dia da área.
+                        </p>
+                        <p class="text-ink-muted text-lg leading-relaxed lang-en">
+                            Feel free to reach out. I genuinely enjoy exchanging ideas about analytics architecture, problem-solving, and the day-to-day of data engineering.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-3 text-xs font-mono text-ink-muted">
+                        <span class="status-engaged"></span>
+                        <span class="lang-pt">curitiba — pr · aberto a conexões</span>
+                        <span class="lang-en">curitiba — brazil · open to connect</span>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-5 reveal">
+                    <div class="border border-rule">
+                        <a href="mailto:antoniacomi.gs@gmail.com" class="group flex items-center justify-between p-6 border-b border-rule hover:bg-elev2 transition-colors">
+                            <div>
+                                <div class="mono-tag mb-1">// e-mail</div>
+                                <div class="text-ink font-mono text-sm">antoniacomi.gs@gmail.com</div>
+                            </div>
+                            <span class="text-accent text-xl group-hover:translate-x-1 transition-transform">→</span>
+                        </a>
+                        <a href="https://wa.me/5541992943117" target="_blank" rel="noopener" class="group flex items-center justify-between p-6 border-b border-rule hover:bg-elev2 transition-colors">
+                            <div>
+                                <div class="mono-tag mb-1">// whatsapp</div>
+                                <div class="text-ink font-mono text-sm">+55 (41) 99294-3117</div>
+                            </div>
+                            <span class="text-accent text-xl group-hover:translate-x-1 transition-transform">→</span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/guilherme-antoniacomi/" target="_blank" rel="noopener" class="group flex items-center justify-between p-6 border-b border-rule hover:bg-elev2 transition-colors">
+                            <div>
+                                <div class="mono-tag mb-1">// linkedin</div>
+                                <div class="text-ink font-mono text-sm">/in/guilhermeantoniacomi</div>
+                            </div>
+                            <span class="text-accent text-xl group-hover:translate-x-1 transition-transform">→</span>
+                        </a>
+                        <a href="https://github.com/GuiAntoniacomi" target="_blank" rel="noopener" class="group flex items-center justify-between p-6 border-b border-rule hover:bg-elev2 transition-colors">
+                            <div>
+                                <div class="mono-tag mb-1">// github</div>
+                                <div class="text-ink font-mono text-sm">github.com/GuiAntoniacomi</div>
+                            </div>
+                            <span class="text-accent text-xl group-hover:translate-x-1 transition-transform">→</span>
+                        </a>
+                        <a href="./cv-guilherme-antoniacomi.pdf" download class="group flex items-center justify-between p-6 hover:bg-elev2 transition-colors bg-accent/5">
+                            <div>
+                                <div class="mono-tag mb-1 text-accent">// <span class="lang-pt">currículo</span><span class="lang-en">resume</span></div>
+                                <div class="text-ink font-mono text-sm"><span class="lang-pt">cv-guilherme-antoniacomi.pdf</span><span class="lang-en">cv-english-guilherme-antoniacomi.pdf</span></div>
+                            </div>
+                            <span class="text-accent text-xl group-hover:translate-y-0.5 transition-transform">↓</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-rule px-6 lg:px-10 py-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-4 font-mono text-xs text-ink-dim">
+            <div class="flex items-center gap-3">
+                <span class="text-accent">{</span>
+                <span>© 2026 · guilherme antoniacomi</span>
+                <span class="text-accent">}</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span>built with <span class="accent-italic" style="font-size: 0.95em">architecture in mind</span></span>
+                <span class="text-rule">|</span>
+                <a href="#top" class="hover:text-accent transition-colors">↑ topo</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Language Toggle — html[lang] is the single source of truth.
+        // CSS (in <style> block) drives both content visibility and the highlight;
+        // JS just flips the attribute and syncs aria + localStorage.
+        const langToggle = document.getElementById('langToggle');
+
+        const syncAria = (lang) => {
+            langToggle.setAttribute(
+                'aria-label',
+                lang === 'pt-BR' ? 'Switch to English' : 'Mudar para Português'
+            );
+            langToggle.setAttribute('aria-pressed', lang === 'en');
+        };
+
+        // NOVA FUNÇÃO: Atualiza os links de download do CV
+        const updateCvLinks = (lang) => {
+            // Seleciona todos os links que possuem o atributo "download"
+            const cvLinks = document.querySelectorAll('a[download]');
+            cvLinks.forEach(link => {
+                link.href = lang === 'pt-BR' 
+                    ? './cv-guilherme-antoniacomi.pdf' 
+                    : './cv-english-guilherme-antoniacomi.pdf';
+            });
+        };
+
+        // Sincroniza estado inicial (Aria e Links do CV)
+        const initialLang = document.documentElement.getAttribute('lang');
+        syncAria(initialLang);
+        updateCvLinks(initialLang); // Roda na primeira vez que a página abre
+
+        langToggle.addEventListener('click', () => {
+            const doc = document.documentElement;
+            const next = doc.getAttribute('lang') === 'pt-BR' ? 'en' : 'pt-BR';
+            doc.setAttribute('lang', next);
+            localStorage.setItem('lang', next);
+            syncAria(next);
+            updateCvLinks(next); // Atualiza os links na hora que o idioma muda
+        });
+
+        // Scroll progress
+        const progress = document.getElementById('scrollProgress');
+        const onScroll = () => {
+            const h = document.documentElement;
+            const total = h.scrollHeight - h.clientHeight;
+            const pct = total > 0 ? (h.scrollTop / total) * 100 : 0;
+            progress.style.width = pct + '%';
+        };
+        document.addEventListener('scroll', onScroll, { passive: true });
+
+        // Mobile menu
+        const navToggle = document.getElementById('navToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+        navToggle?.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+        mobileMenu?.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+        // Reveal-on-scroll
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('in');
+                    io.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+        document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+        // Active nav section
+        const sections = ['sobre','pilares','cases','contato'].map(id => document.getElementById(id));
+        const navLinks = document.querySelectorAll('.nav-link');
+        const navObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    const id = e.target.id;
+                    navLinks.forEach(l => l.dataset.active = (l.dataset.section === id) ? 'true' : 'false');
+                }
+            });
+        }, { rootMargin: '-40% 0px -55% 0px' });
+        sections.forEach(s => s && navObserver.observe(s));
+    </script>
+</body>
+</html>
